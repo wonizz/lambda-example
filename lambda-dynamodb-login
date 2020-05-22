@@ -1,0 +1,68 @@
+//모듈 선언.
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (event, context, callback) => {
+    
+    // 0. 변수선언
+    //const body = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    //const id = body.username;
+    const email = body.email;
+    const name = body.name;
+    const password = body.password;
+   
+    const encrypted = crypto.createCipher('aes-256-cbc', 'secret');
+    let encryptedpw = encrypted.update(password, 'utf8', 'base64'); 
+    encryptedpw += encrypted.final('base64');
+
+    //1. 유저 정보 조회
+    const payload = {
+        TableName: 'user',
+        ProjectionExpression: "#email, password",    // 1. select val, test, id
+        FilterExpression: "#email=:email", // 3. where val between :start and :end
+        ExpressionAttributeNames: {
+            "#email": "email"
+        },
+        ExpressionAttributeValues: {
+             ":email": email
+        }
+    }
+    dynamo.scan(payload, (err, data) => {
+        if(data.Count === 0){
+            //2 . 없으면 신규 등록 
+            var params = {
+              Item: {
+                  "email": email,
+                  "name": name,
+                  "password": encryptedpw
+                },
+              TableName: 'user' // 필수
+            };
+            dynamo.putItem(params, function (err, data) {
+              if (err)
+                callback(null, {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': '{"message" : "Internal Server Error"}'
+                });
+              else
+                callback(null, {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': '{"message" : "User Resistered Successful"}'
+                });
+            });
+        }
+        
+        //3. 있으면 에러
+        else
+        callback(null, {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+            'body': '{"message" : "user exists"}'
+        });
+    });
+};
