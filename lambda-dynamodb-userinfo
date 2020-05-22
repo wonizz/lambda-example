@@ -1,0 +1,36 @@
+//모듈 선언.
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (event, context, callback) => {
+    
+    // 0. 변수선언
+    const body = JSON.parse(event.body);
+    //const body = JSON.parse(event.body);
+    const token = body.token;
+    
+        try {
+            var jwttoken = jwt.verify(token, process.env.JWT_SECRET || 'JWT_SECRET');
+            callback(null, {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': JSON.stringify(jwttoken)
+            });
+        } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+             callback(null, {
+                'statusCode': 419,
+                'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                'body': '{"message" : "token expired"}'
+            });
+        }
+            callback(null, {
+                'statusCode': 401,
+                'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                'body': '{"message" : "invalid token"}'
+            });
+        }
+    
+};
