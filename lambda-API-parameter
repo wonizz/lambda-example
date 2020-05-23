@@ -1,0 +1,39 @@
+//checkoutBook
+//1. 대출
+[update]대출신청을 하면 BOOK의 reservationYN 을 N으로 수정 하고 예정일 입력
+[putitem] 대출신청을 하면 Reservatinolist에 row 추가 
+{
+	"booktitle" : "쿠버네티스 패턴",
+	"email" : "test221@test.com",
+	"duedate" : "2020-05-26",
+	"rsrvdate" : "2020-05-12"
+}
+
+//returnBook
+//2. 반납
+[update] 반납 신청을 하면 Reservationlist에 반납 완료 필드 업데이트
+[update] 반납 신청을 하면 BOOK의 reservationYN 을 Y로 수정하고 예정일 삭제 
+{
+	"booktitle" : "쿠버네티스패턴",
+	"email" : "test221@test.com",
+	"returndate" : "2020-05-26"
+}
+
+//login : 로그인 API
+{
+    "email": "test221@test.com",
+    "password": "1231"
+}
+
+
+//register : 유저 등록 API
+{
+    "email": "test221@test.com",
+    "name": "dlehddnjs",
+    "password": "1234"
+}
+
+//userinfo : 토큰값 유효성 검증 
+{
+    "token": "eyJhbiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3QyMjFAdGVzdC5jb20iLCJuYW1lIjoiZGRkZGRkMTExMjIiLCJpYXQiOjE1OTAyMTM0MTAsImV4cCI6MTU5MDIxNTIxMCwiaXNzIjoiZ2V0X3Rva2VuX2NvbnRyb2xsZXIifQ.1-wekORpzeMtkC3SHJ2ZkrvnrFkwD_JgyjMKm4hn7ZE"
+}
