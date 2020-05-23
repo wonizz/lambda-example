@@ -16,7 +16,7 @@ exports.handler = (event, context, callback) => {
             callback(null, {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
-                    'body': JSON.stringify(jwttoken)
+                    'body': '{"user" :' + JSON.stringify(jwttoken) + '}'
             });
         } catch (error) {
         if (error.name === 'TokenExpiredError') {
