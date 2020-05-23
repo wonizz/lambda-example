@@ -7,8 +7,11 @@ const dynamo = new doc.DynamoDB();
 exports.handler = (event, context, callback) => {
     
     // 0. 변수선언
+    //const body = JSON.parse(event.body);
     const body = JSON.parse(event.body);
+    //const id = body.username;
     const email = body.email;
+    const name = body.name;
     const password = body.password;
    
     const encrypted = crypto.createCipher('aes-256-cbc', 'secret');
@@ -28,22 +31,27 @@ exports.handler = (event, context, callback) => {
         }
     }
     dynamo.scan(payload, (err, data) => {
-        data = data.Items[0];
-        if(data === undefined){
-            //2 . 없으면 에러  
-            callback(null, {
+        if(data.Count === 0){
+            //2 . 없으면 신규 등록 
+            var params = {
+              Item: {
+                  "email": email,
+                  "name": name,
+                  "password": encryptedpw
+                },
+              TableName: 'user' // 필수
+            };
+            dynamo.putItem(params, function (err, data) {
+              if (err)
+                callback(null, {
                     'statusCode': 500,
                     'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
-                    'body': '{"message" : "ID or PW mismatched"}'
-            });
-        }
-        
-        //3. 있으면 패스워드 체크
-        else
-        //3-1. 패스워드 일치하면 jwt 발급
-        if(encryptedpw === data.password){
-                const token = jwt.sign({
+                    'body': '{"message" : "Internal Server Error"}'
+                });
+              else
+                var token = jwt.sign({
                     id: email,
+                    name: data.name
                 }, (process.env.JWT_SECRET || 'JWT_SECRET'), {
                     expiresIn: '30m',
                      issuer: 'get_token_controller',
@@ -51,16 +59,17 @@ exports.handler = (event, context, callback) => {
                 callback(null, {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json; charset=UTF-8'},
-                    'body': '{"token" : ' + JSON.stringify(token) + '}'
+                    'body': '{"user" : {"email":\"' +email +'\","username":\"'+name+'\","token" : ' + JSON.stringify(token) + '}}'
                 });
-                
-        }else{
-        //3-2. 패스워드 일치하지 않으면 에러 
-            callback(null, {
-                    'statusCode': 500,
-                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
-                    'body': '{"message" : "ID or PW mismatched"}'
             });
         }
+        
+        //3. 있으면 에러
+        else
+        callback(null, {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+            'body': '{"message" : "user exists"}'
+        });
     });
 };
