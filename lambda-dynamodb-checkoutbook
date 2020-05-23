@@ -1,0 +1,67 @@
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (bodyevent, context, callback) => {
+   
+	//1. 변수 선언. 
+    const body = JSON.parse(event.body);
+    const title = body.booktitle;
+	const email = body.email;
+	const duedate = body.duedate;
+	const rsrvdate = body.rsrvdate;
+	
+	//2. book 테이블 업데이트 
+    const params = {
+        TableName: "book",
+        Key: {
+            "title": title
+        },
+        UpdateExpression: "set reservationYN = :x, duedate = :y",
+        
+        ExpressionAttributeValues: {
+            ":x": "N",
+			":y": duedate
+        }
+    };
+    
+    dynamo.updateItem(params, function(err, data) {
+        if (err) {
+            console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+            callback(null, {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+            });
+        } else {
+            //3. reservationlist 테이블 row insert
+            var params = {
+              Item: {
+                  "booktitle": title,
+                  "email": email,
+                  "rsrvdate": rsrvdate,
+                  "duedate": duedate
+                },
+              TableName: 'reservationlist' // 필수
+            };
+            dynamo.putItem(params, function (err, data) {
+              if (err)
+                callback(null, {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': '{"message" : "Internal Server Error"}'
+                });
+              else
+                //4. book 목록 조회
+                var payload = {
+                    TableName: 'book'
+                }
+                dynamo.scan(payload, (err, data) => {
+                            callback(null, {
+                                'statusCode': 200,
+                                'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                                'body': JSON.stringify(data)
+                            });
+                        });
+            });
+        }
+    });
+};
