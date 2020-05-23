@@ -1,0 +1,28 @@
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (event, context, callback) => {
+    const operation = event.method;
+    const user = event.queryStringParameters.user;
+    
+    console.log("method :" + operation)
+    console.log("user :" + user)
+    const payload = {
+        TableName: 'reservation',
+        ProjectionExpression: "#email, rsrvList",    // 1. select val, test, id
+        FilterExpression: "#email=:user", // 3. where val between :start and :end
+        ExpressionAttributeNames: {
+            "#email": "email",
+        },
+        ExpressionAttributeValues: {
+             ":user": user,
+        }
+    }
+    dynamo.scan(payload, (err, data) => {
+                callback(null, {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': JSON.stringify(data)
+                });
+            });
+};
