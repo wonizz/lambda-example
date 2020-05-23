@@ -1,0 +1,18 @@
+//모듈 선언.
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (event, context, callback) => {
+    const payload = {
+        TableName: 'book'
+    }
+    dynamo.scan(payload, (err, data) => {
+                callback(null, {
+                    'statusCode': 200,
+                    'headers': {},
+                    'body': JSON.stringify(data)
+                });
+            });
+};
