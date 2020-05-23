@@ -1,0 +1,68 @@
+const doc = require('dynamodb-doc');
+const dynamo = new doc.DynamoDB();
+
+exports.handler = (event, context, callback) => {
+   
+	//1. 변수 선언. 
+    const body = JSON.parse(event.body);
+    const title = body.booktitle;
+	const email = body.email;
+	const returndate = body.returndate;
+	
+	//2. reservationlist 테이블 업데이트 
+	const params = {
+        TableName: "reservationlist",
+        Key: {
+            "email": email,
+            "booktitle": title
+        },
+        UpdateExpression: "set returndate = :x",
+        
+        ExpressionAttributeValues: {
+            ":x": returndate
+        }
+    };
+     dynamo.updateItem(params, function(err, data) {
+        if (err) {
+            console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+            callback(null, {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+            });
+        } else {
+            //3. book 테이블 업데이트
+            var bookparams = {
+                TableName: "book",
+                Key: {
+                    "title": title
+                },
+                UpdateExpression: "set reservationYN = :x, duedate= :y",
+                
+                ExpressionAttributeValues: {
+                    ":x": "Y",
+                    ":y": ""
+                }
+            };
+           dynamo.updateItem(bookparams, function(err, data) {
+              if (err)
+                callback(null, {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                    'body': '{"message" : "Internal Server Error"}'
+                });
+              else
+                //4. reservationlist 목록 조회
+                var payload = {
+                    TableName: 'reservationlist'
+                }
+                dynamo.scan(payload, (err, data) => {
+                            callback(null, {
+                                'statusCode': 200,
+                                'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
+                                'body': JSON.stringify(data)
+                            });
+                        });
+            });
+        }
+    });
+};
