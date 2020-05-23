@@ -49,10 +49,17 @@ exports.handler = (event, context, callback) => {
                     'body': '{"message" : "Internal Server Error"}'
                 });
               else
+                var token = jwt.sign({
+                    id: email,
+                    name: data.name
+                }, (process.env.JWT_SECRET || 'JWT_SECRET'), {
+                    expiresIn: '30m',
+                     issuer: 'get_token_controller',
+                });
                 callback(null, {
                     'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
-                    'body': '{"message" : "User Resistered Successful"}'
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8'},
+                    'body': '{"user" : {"email":\"' +email +'\","username":\"'+name+'\","token" : ' + JSON.stringify(token) + '}}'
                 });
             });
         }
