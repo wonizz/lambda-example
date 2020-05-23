@@ -3,13 +3,13 @@ const dynamo = new doc.DynamoDB();
 
 exports.handler = (event, context, callback) => {
     const operation = event.method;
-    const user = event.queryStringParameters.user;
+    const user = "dong_won.lee@samsung.com";
     
     console.log("method :" + operation)
     console.log("user :" + user)
     const payload = {
-        TableName: 'reservation',
-        ProjectionExpression: "#email, rsrvList",    // 1. select val, test, id
+        TableName: 'reservationlist',
+        //ProjectionExpression: "#email, rsrvList",    // 1. select val, test, id
         FilterExpression: "#email=:user", // 3. where val between :start and :end
         ExpressionAttributeNames: {
             "#email": "email",
