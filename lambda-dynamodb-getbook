@@ -11,7 +11,7 @@ exports.handler = (event, context, callback) => {
     dynamo.scan(payload, (err, data) => {
                 callback(null, {
                     'statusCode': 200,
-                    'headers': {},
+                    'headers': {'Content-Type': 'application/json; charset=UTF-8', 'access-control-allow-origin': '*'},
                     'body': JSON.stringify(data)
                 });
             });
