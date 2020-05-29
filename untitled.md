@@ -4,7 +4,7 @@ description: 도서 대출 관련 API
 
 # 03.checkoutbook
 
-{% api-method method="get" host="https://8xk6c6vlz2.execute-api.ap-northeast-2.amazonaws.com" path="/checkoutBook" %}
+{% api-method method="post" host="https://8xk6c6vlz2.execute-api.ap-northeast-2.amazonaws.com" path="/checkoutBook" %}
 {% api-method-summary %}
 Get Cakes
 {% endapi-method-summary %}
