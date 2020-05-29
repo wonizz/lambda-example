@@ -6,7 +6,7 @@ description: 도서 리스트를 가져오는 API
 
 {% api-method method="get" host="https://8xk6c6vlz2.execute-api.ap-northeast-2.amazonaws.com" path="/getBook" %}
 {% api-method-summary %}
-Get Cakes
+Get Books
 {% endapi-method-summary %}
 
 {% api-method-description %}
