@@ -112,7 +112,9 @@ Could not find a cake matching this query.
 {% endapi-method-response-example-description %}
 
 ```
-https://8xk6c6vlz2.execute-api.ap-northeast-2.amazonaws.com/checkoutBookcheck
+{
+  "message": "Not Found"
+}
 ```
 {% endapi-method-response-example %}
 
